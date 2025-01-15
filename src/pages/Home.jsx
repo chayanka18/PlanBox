@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import NodeModal from "../components/NoteModal";
-// import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NoteCard from "../components/NoteCard";
 
@@ -11,6 +10,13 @@ const Home = () => {
   const [notes, setNotes] = useState([]);
   const [currentNote, setCurrentNote] = useState(false);
   const [query, setQuery] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check if the user is authenticated (token in localStorage)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token); // Set true if token exists, false otherwise
+  }, []);
 
   // Fetch notes function
   const fetchNotes = async () => {
@@ -58,14 +64,13 @@ const Home = () => {
         { title, description },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       if (response.data.success) {
         closeModal();
-        // Refresh the notes after adding a new note
         fetchNotes();
       }
     } catch (error) {
@@ -83,7 +88,7 @@ const Home = () => {
         { id, title, description },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
@@ -95,7 +100,7 @@ const Home = () => {
           )
         );
         closeModal();
-        fetchNotes(); // Refresh the notes after editing
+        fetchNotes();
       }
     } catch (error) {
       console.error(
@@ -111,13 +116,13 @@ const Home = () => {
         `http://localhost:5000/api/note/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       if (response.data.success) {
-        fetchNotes(); // Refresh the notes after deletion
+        fetchNotes();
       }
     } catch (error) {
       console.error(
@@ -170,12 +175,14 @@ const Home = () => {
           )}
         </div>
       )}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed right-4 bottom-4 text-2xl bg-teal-500 text-white font-bold p-4 rounded-full"
-      >
-        +
-      </button>
+      {isAuthenticated && (
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="fixed right-4 bottom-4 text-2xl bg-teal-500 text-white font-bold p-4 rounded-full"
+        >
+          +
+        </button>
+      )}
       {isModalOpen && (
         <NodeModal
           closeModal={closeModal}
