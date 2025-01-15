@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import NodeModal from "../components/NoteModal";
+// import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NoteCard from "../components/NoteCard";
 
@@ -10,13 +11,6 @@ const Home = () => {
   const [notes, setNotes] = useState([]);
   const [currentNote, setCurrentNote] = useState(false);
   const [query, setQuery] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Check if the user is authenticated (token in localStorage)
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token); // Set true if token exists, false otherwise
-  }, []);
 
   // Fetch notes function
   const fetchNotes = async () => {
@@ -64,13 +58,14 @@ const Home = () => {
         { title, description },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
           },
         }
       );
 
       if (response.data.success) {
         closeModal();
+        // Refresh the notes after adding a new note
         fetchNotes();
       }
     } catch (error) {
@@ -88,7 +83,7 @@ const Home = () => {
         { id, title, description },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
           },
         }
       );
@@ -100,7 +95,7 @@ const Home = () => {
           )
         );
         closeModal();
-        fetchNotes();
+        fetchNotes(); // Refresh the notes after editing
       }
     } catch (error) {
       console.error(
@@ -116,13 +111,13 @@ const Home = () => {
         `http://localhost:5000/api/note/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Include the token
           },
         }
       );
 
       if (response.data.success) {
-        fetchNotes();
+        fetchNotes(); // Refresh the notes after deletion
       }
     } catch (error) {
       console.error(
@@ -148,41 +143,36 @@ const Home = () => {
             mode="normal"
           ></lottie-player>
         </div>
+      ) : filteredNotes.length === 0 ? (
+        <div className="flex flex- justify-center items-center min-h-screen ">
+          <lottie-player
+            src="https://lottie.host/b2374421-1a07-4eda-9dcd-cdcfc1a53831/OdAb8XiVSI.json"
+            speed="1"
+            style={{ width: "350px", height: "350px" }}
+            loop
+            autoplay
+            direction="1"
+            mode="normal"
+          ></lottie-player>
+        </div>
       ) : (
         <div className="px-8 pt-5 grid grid-cols-1 md:grid-cols-3 gap-5">
-          {filteredNotes.length > 0 ? (
-            filteredNotes.map((note) => (
-              <NoteCard
-                key={note._id}
-                note={note}
-                onEdit={onEdit}
-                deleteNote={deleteNote}
-              />
-            ))
-          ) : (
-            <div className="flex flex-col justify-center items-center min-h-screen ml-80">
-              <lottie-player
-                src="https://lottie.host/b2374421-1a07-4eda-9dcd-cdcfc1a53831/OdAb8XiVSI.json"
-                speed="1"
-                style={{ width: "300px", height: "300px" }}
-                loop
-                autoplay
-                direction="1"
-                mode="normal"
-              ></lottie-player>
-              <p>No Notes found</p>
-            </div>
-          )}
+          {filteredNotes.map((note) => (
+            <NoteCard
+              key={note._id}
+              note={note}
+              onEdit={onEdit}
+              deleteNote={deleteNote}
+            />
+          ))}
         </div>
       )}
-      {isAuthenticated && (
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="fixed right-4 bottom-4 text-2xl bg-teal-500 text-white font-bold p-4 rounded-full"
-        >
-          +
-        </button>
-      )}
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="fixed right-4 bottom-4 text-2xl bg-teal-500 text-white font-bold p-4 rounded-full"
+      >
+        +
+      </button>
       {isModalOpen && (
         <NodeModal
           closeModal={closeModal}
